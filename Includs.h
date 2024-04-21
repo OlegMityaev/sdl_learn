@@ -3,3 +3,7 @@
 #include <string>
 #include <iostream>
 #include <SDL.h>
+#include <vector>
+#include "SDL_image.h"
+#include "windows.h"
+#include <random>

@@ -130,6 +130,7 @@
     <ClCompile Include="InitError.cpp" />
     <ClCompile Include="MySDL.cpp" />
     <ClCompile Include="sdl_learn.cpp" />
+    <ClCompile Include="Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -138,6 +139,7 @@
     <ClInclude Include="Includs.h" />
     <ClInclude Include="InitError.h" />
     <ClInclude Include="MySDL.h" />
+    <ClInclude Include="Sprite.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
