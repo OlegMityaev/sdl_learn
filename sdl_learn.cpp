@@ -1,98 +1,72 @@
-﻿/*#include "Includs.h"
-#include "MySDL.h"
-#include "Sprite.h"
-
-
-int main(int argc, char* argv[])
-{
-	setlocale(LC_ALL, "russian");
-
-
-    //Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-    }
-    else
-    {
-        //Create window
-        SDL_Window* gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1000, 1000, SDL_WINDOW_SHOWN);
-        if (gWindow == NULL)
-        {
-            printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-        }
-        else
-        {
-            //Get window surface
-            SDL_Surface* gScreenSurface = SDL_GetWindowSurface(gWindow);
-        }
-    }
-
-	SDL sdl(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-	//const char* backscreen_name = "backscreen.jpg";
-	//SDL_Texture* back_texture = sdl.loadTexture(backscreen_name);
-	std::string doomer_sprite = "doomer_split_16frames.png";
-	//SDL_Surface* surf = SDL_LoadBMP("backscreen.bmp");
-	//std::cout << surf->w;
-    //sdl.draw(surf);
-
-    Sprite spr(sdl.getRender());
-    bool flag = spr.LoadFromFile(doomer_sprite, 16);
-    size_t frame = 0;
-    
-    if (flag)
-    {
-        while (frame < 16)
-        {
-            //Clear screen
-            SDL_SetRenderDrawColor(sdl.getRender(), 0xFF, 0xFF, 0xFF, 0xFF);
-            SDL_RenderClear(sdl.getRender());
-
-            spr.renderer(0, 0, frame);
-            frame++;
-            Sleep(200);
-            //Update screen
-            SDL_RenderPresent(sdl.getRender());
-        }
-    }
-    else
-    {
-        std::cout << "LoadFromFile error " << SDL_Error << std::endl;
-    }
-	
-	return 0;
-}*/
-
-
-
-
-#include "Includs.h"
+﻿#include "Includs.h"
 #include "MySDL.h"
 #include "Sprite.h"
 #include "InitError.h"
 
-void animation(bool flag, Sprite spr, SDL sdl, size_t frame)
+//13 кадр = выстрел
+
+
+Mix_Chunk* loadSound(std::string name)
 {
-    if (flag)
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
     {
-        while (frame < 16)
+        std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+    }
+
+    //Load music
+    Mix_Chunk* gMusic = Mix_LoadWAV(name.c_str());
+    if (gMusic == NULL)
+    {
+        std::cout << "Failed to load beat music! SDL_mixer Error: " << Mix_GetError() << std::endl;
+    }
+
+    return gMusic;
+}
+
+void animation(std::string path_anim, std::string path_music, size_t count_frame, int num_of_frame_sound)
+{
+    SDL new_sdl(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO);
+    Sprite new_spr(new_sdl.getRender());
+    bool flag_anim = new_spr.LoadFromFile(path_anim, 16);
+    bool flag_music = new_spr.loadAudio(path_music);
+
+    if (new_spr.getAudio() == nullptr)
+    {
+        std::cout << "Sound has not downloaded" << std::endl;
+    }
+    int frame = 0;
+    if (flag_anim)
+    {
+        new_spr.SetRenderer(new_sdl.getRender());
+        while (frame < count_frame)
         {
             //Clear screen
-            SDL_SetRenderDrawColor(sdl.getRender(), 0xFF, 0xFF, 0xFF, 0xFF);
-            SDL_RenderClear(sdl.getRender());
+            SDL_SetRenderDrawColor(new_sdl.getRender(), 0xFF, 0xFF, 0xFF, 0xFF);
+            SDL_RenderClear(new_sdl.getRender());
 
-            spr.renderer(0, 0, frame);
+            new_spr.renderer(0, 0, frame);
             frame++;
             Sleep(200);
             //Update screen
-            SDL_RenderPresent(sdl.getRender());
+            if (frame == num_of_frame_sound && new_spr.getAudio() != nullptr)
+            {
+                if(Mix_PlayChannel(-1, new_spr.getAudio(), 1) == -1)
+                {
+                    std::cout << "Mix_PlayChannel: " << Mix_GetError() << std::endl;
+                }
+            }
+            SDL_RenderPresent(new_sdl.getRender());
         }
+        SDL_UpdateWindowSurface(new_sdl.getWindow());
     }
     else
     {
         std::cout << "LoadFromFile error " << SDL_Error << std::endl;
     }
+    new_spr.free();
 }
+
+
 
 // blank - холостой
 // live - заряженный
@@ -173,33 +147,6 @@ public:
 int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "Russian");
     srand(time(0));
-
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-    }
-    else
-    {
-        //Create window
-        SDL_Window* gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1000, 1000, SDL_WINDOW_SHOWN);
-        if (gWindow == NULL)
-        {
-            printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-        }
-        else
-        {
-            //Get window surface
-            SDL_Surface* gScreenSurface = SDL_GetWindowSurface(gWindow);
-        }
-    }
-
-    SDL sdl(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    std::string doomer_sprite = "doomer_split_16frames.png";
-
-
-    Sprite spr(sdl.getRender());
-    bool flag_spr = spr.LoadFromFile(doomer_sprite, 16);
-    size_t frame = 0;
 
     int num_of_energydrinks = 0, num_of_cigarettes = 0; //randomreceiving = 0
     int choosen_bullet = 0;
@@ -282,7 +229,7 @@ int main(int argc, char* argv[]) {
                         }
                         player.receive_damage(is_hitted);
                         if (is_hitted) {
-                            animation(flag_spr, spr, sdl, frame);
+                            animation("doomer_split_16frames.png", "vyistrelom-iz-drobovika-vyishiblo-mozgi.wav", 16, 13);
                             std::cout << "Ты ебанутый там боевой патрон" << std::endl;
                             std::cout << "GOAAAAAAAAAAAAAAAAAAL" << std::endl;
                             std::cout << "Your current hp " << player.get_hp() << std::endl;

@@ -7,3 +7,5 @@
 #include "SDL_image.h"
 #include "windows.h"
 #include <random>
+#include "vld.h"
+#include <SDL_mixer.h>

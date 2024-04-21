@@ -13,8 +13,26 @@ Sprite::Sprite(SDL_Renderer* _render)
 
 Sprite::~Sprite()
 {
+	//Free texture if it exists
+	if (mTexture != NULL)
+	{
+		SDL_DestroyTexture(mTexture);
+		mTexture = NULL;
+		mWidth = 0;
+		mHeight = 0;
+	}
+	if (gMusic != NULL)
+	{
+		//Free the sound effects
+		Mix_FreeChunk(gMusic);
+		gMusic = NULL;
+
+		//Quit SDL subsystems
+		Mix_Quit();
+	}
 	SDL_DestroyRenderer(render);
 	SDL_Quit();
+	Mix_CloseAudio();
 }
 
 bool Sprite::LoadFromFile(std::string path, size_t aFrameCount)
@@ -60,6 +78,27 @@ bool Sprite::LoadFromFile(std::string path, size_t aFrameCount)
 	return mTexture != nullptr;
 }
 
+bool Sprite::loadAudio(std::string path_audio)
+{
+	bool success = true;
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
+		success = false;
+	}
+
+	//Load music
+	gMusic = Mix_LoadWAV(path_audio.c_str());
+	if (gMusic == NULL)
+	{
+		std::cout << "Failed to load beat music! SDL_mixer Error: " << Mix_GetError() << std::endl;
+		success = false;
+	}
+
+	return success;
+}
+
 void Sprite::renderer(int x, int y, size_t aFrameNumber)
 {
 	SDL_Rect renderQuad = { x, y, static_cast<int>(mWidth), static_cast<int>(mHeight) };
@@ -77,6 +116,16 @@ void Sprite::free()
 		mWidth = 0;
 		mHeight = 0;
 	}
+	if (gMusic != NULL)
+	{
+		//Free the sound effects
+		Mix_FreeChunk(gMusic);
+		gMusic = NULL;
+
+		//Quit SDL subsystems
+		Mix_Quit();
+	}
+	Mix_CloseAudio();
 }
 
 size_t Sprite::getWidth()
