@@ -24,9 +24,14 @@ public:
 		return gMusic;
 	}
 
+	SDL_Renderer* getRender()
+	{
+		return render;
+	}
+
 	void SetRenderer(SDL_Renderer* _render)
 	{
-		render = _render;
+		render = render;
 	}
 
 	void renderer(int x, int y, size_t aFrameNumber);

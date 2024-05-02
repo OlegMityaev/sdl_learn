@@ -33,11 +33,14 @@ Sprite::~Sprite()
 	SDL_DestroyRenderer(render);
 	SDL_Quit();
 	Mix_CloseAudio();
+	if(TTF_WasInit())
+		TTF_Quit();
+	IMG_Quit();
 }
 
 bool Sprite::LoadFromFile(std::string path, size_t aFrameCount)
 {
-	SDL_RenderClear(render);
+	//SDL_RenderClear(render);
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 	SDL_Texture* newTexture = nullptr;
 
@@ -102,7 +105,6 @@ bool Sprite::loadAudio(std::string path_audio)
 void Sprite::renderer(int x, int y, size_t aFrameNumber)
 {
 	SDL_Rect renderQuad = { x, y, static_cast<int>(mWidth), static_cast<int>(mHeight) };
-	//render to screen
 	SDL_RenderCopy(render, mTexture, &mvRects[aFrameNumber], &renderQuad);
 }
 
@@ -119,13 +121,15 @@ void Sprite::free()
 	if (gMusic != NULL)
 	{
 		//Free the sound effects
-		Mix_FreeChunk(gMusic);
 		gMusic = NULL;
+		Mix_FreeChunk(gMusic);
+		
 
 		//Quit SDL subsystems
 		Mix_Quit();
 	}
 	Mix_CloseAudio();
+	SDL_RenderClear(render);
 }
 
 size_t Sprite::getWidth()

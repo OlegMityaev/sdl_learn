@@ -9,3 +9,5 @@
 #include <random>
 #include "vld.h"
 #include <SDL_mixer.h>
+#include "SDL_events.h"
+#include "SDL_ttf.h"
